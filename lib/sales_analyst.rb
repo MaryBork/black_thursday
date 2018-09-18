@@ -327,4 +327,18 @@ class SalesAnalyst
 
   end
 
+  def items_bought_in_year(customer_id, year)
+    customer_purchases = @invoices.find_all_by_customer_id(customer_id)
+    purchases_by_year = customer_purchases.find_all do |purchase|
+      purchase.created_at.strftime("%Y").to_i == year
+    end
+    invoice_items_by_year = purchases_by_year.map do |purchase|
+      @invoice_items.find_all_by_invoice_id(purchase.id)
+    end.flatten
+
+    invoice_items_by_year.map do |invoice_item|
+      @items.find_by_id(invoice_item.item_id)
+    end
+  end
+
 end
