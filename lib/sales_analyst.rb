@@ -191,7 +191,6 @@ class SalesAnalyst
   def one_time_buyers
     @customers.all.find_all do |customer|
       invoices = customer_invoices(customer.id)
-      # invoices = @invoices.find_all_by_customer_id(customer.id)
       invoices.length == 1
     end
   end
@@ -199,7 +198,6 @@ class SalesAnalyst
   def one_time_buyer_items
     one_time_buyers.reduce([]) do |array, buyer|
       invoice = (customer_invoices(buyer.id))[0]
-      # invoice = (@invoices.find_all_by_customer_id(buyer.id))[0]
 
       if invoice_paid_in_full?(invoice.id) == true
         buyer_items = @invoice_items.find_all_by_invoice_id(invoice.id)
@@ -216,7 +214,6 @@ class SalesAnalyst
     end
   end
 
-  # returns item object
   def one_time_buyers_top_item
     item_quantities = one_time_buyer_items.flatten.reduce(Hash.new(0)) do |hash, buyer_item|
       if hash[buyer_item.item_id] == 0
@@ -335,15 +332,11 @@ class SalesAnalyst
 
   def items_bought_in_year(customer_id, year)
     customer_purchases = customer_invoices(customer_id)
-    # customer_purchases = @invoices.find_all_by_customer_id(customer_id)
 
     purchases_by_year = customer_purchases.find_all do |purchase|
       purchase.created_at.strftime("%Y").to_i == year
     end
 
-    # invoice_items_by_year = purchases_by_year.map do |purchase|
-    #   @invoice_items.find_all_by_invoice_id(purchase.id)
-    # end.flatten
     invoice_items_by_year = invoice_list_to_invoice_item_list(purchases_by_year)
 
     invoice_items_by_year.map do |invoice_item|
@@ -354,7 +347,6 @@ class SalesAnalyst
   def customers_with_unpaid_invoices
     @customers.all.find_all do |customer|
       customer_invoices = customer_invoices(customer.id)
-      # customer_invoices = @invoices.find_all_by_customer_id(customer.id)
       customer_invoices.any? do |invoice|
         invoice_paid_in_full?(invoice.id) == false
       end
@@ -363,27 +355,12 @@ class SalesAnalyst
 
   def highest_volume_items(customer_id)
     customer_invoices = customer_invoices(customer_id)
-    # customer_invoices = @invoices.find_all_by_customer_id(customer_id)
 
-    # customer_invoice_items = customer_invoices.map do |invoice|
-    #   @invoice_items.find_all_by_invoice_id(invoice.id)
-    # end.flatten
     customer_invoice_items = invoice_list_to_invoice_item_list(customer_invoices)
 
     cust_item_quantities = item_id_by_quantity(customer_invoice_items)
-    # customer_invoice_items.reduce(Hash.new(0)) do |hash, invoice_item|
-    #   if hash[invoice_item.item_id].nil? == false
-    #     hash[invoice_item.item_id] = invoice_item.quantity
-    #   else
-    #     hash[invoice_item.item_id] + invoice_item.quantity
-    #   end
-    #   hash
-    # end
 
     highest_quantity = max_by_quantity(cust_item_quantities)[-1]
-    # cust_item_quantities.max_by do |item_id, item_quantity|
-    #   item_quantity
-    # end[-1]
 
     high_item_quantities = cust_item_quantities.find_all do |item_id, item_quantity|
       item_quantity == highest_quantity
