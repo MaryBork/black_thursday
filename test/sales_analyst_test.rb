@@ -156,8 +156,15 @@ class SalesAnalystTest < Minitest::Test
     assert_equal 999, actual.last.id
   end
 
-  # def test_can_return_invoice_with_highest_dollar_amount
-  #
-  # end
+  def test_can_return_invoice_with_highest_revenue
+    actual = @sales_analyst.best_invoice_by_revenue
+    assert_equal 3394, actual.id
+    assert_equal Invoice, actual.class
+  end
+
+  def test_it_can_return_best_invoice_by_quantity
+    assert_equal 1281, @sales_analyst.best_invoice_by_quantity.id
+    assert_equal Invoice, @sales_analyst.best_invoice_by_quantity.class
+  end
 
 end

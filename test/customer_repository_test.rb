@@ -34,14 +34,36 @@ class CustomerRepositoryTest < Minitest::Test
   end
 
   def test_can_create_new_customers
-    @customer_repo.create({
+    customer_repo = CustomerRepository.new
+    customer_repo.create({
       :first_name => "John",
       :last_name => "Smith",
       :created_at => Time.now,
       :updated_at => Time.now
       })
 
-    assert_equal "John", @customer_repo.find_by_id(1001).first_name
+    assert_equal "John", customer_repo.all.first.first_name
+    assert_equal 1, customer_repo.all.first.id
+
+    customer_repo.create({
+      :first_name => "Bob",
+      :last_name => "Smith",
+      :created_at => Time.now,
+      :updated_at => Time.now
+      })
+
+    assert_equal "Bob", customer_repo.all.last.first_name
+    assert_equal 2, customer_repo.all.last.id
+
+    customer_repo.create({
+      :first_name => "Joe",
+      :last_name => "Smith",
+      :created_at => Time.now,
+      :updated_at => Time.now
+      })
+
+    assert_equal "Joe", customer_repo.all.last.first_name
+    assert_equal 3, customer_repo.all.last.id
   end
 
   def test_can_update_customer_names_only
@@ -60,7 +82,6 @@ class CustomerRepositoryTest < Minitest::Test
     assert_equal "Smith", @customer_repo.find_by_id(1).last_name
     assert_equal old_times, @customer_repo.find_by_id(1).created_at
     assert_equal Time.now.to_s, @customer_repo.find_by_id(1).updated_at.to_s
-    assert_equal "John Smith", @customer_repo.find_by_id(1).whole_name
   end
 
   def test_can_delete_customer

@@ -169,6 +169,17 @@ class TransactionRepositoryTest < Minitest::Test
     tr = TransactionRepository.new
 
     tr.create({
+      :invoice_id => 21,
+      :credit_card_number => "446050003000999",
+      :credit_card_expiration_date => "0121",
+      :result => "success",
+      :created_at => Time.now,
+      :updated_at => Time.now
+    })
+    actual = tr.find_by_id(1).invoice_id
+    assert_equal 21, actual
+
+    tr.create({
       :id => 9,
       :invoice_id => 1752,
       :credit_card_number => "4463525332822998",
@@ -179,6 +190,18 @@ class TransactionRepositoryTest < Minitest::Test
     })
     actual = tr.find_by_id(9).invoice_id
     assert_equal 1752, actual
+
+    tr.create({
+      :id => 9,
+      :invoice_id => 2001,
+      :credit_card_number => "446050003000008",
+      :credit_card_expiration_date => "0721",
+      :result => "success",
+      :created_at => Time.now,
+      :updated_at => Time.now
+    })
+    actual = tr.find_by_id(10).invoice_id
+    assert_equal 2001, actual
   end
 
 
@@ -237,6 +260,15 @@ class TransactionRepositoryTest < Minitest::Test
       tr.delete(3)
 
       assert_nil tr.find_by_id(3)
+    end
+
+    def test_it_can_split_csv
+      tr = TransactionRepository.new("./data/transactions_test.csv")
+
+      assert_equal 10, tr.all.length
+
+      assert_equal 1, tr.all.first.id
+      assert_equal 10, tr.all.last.id
     end
 
 

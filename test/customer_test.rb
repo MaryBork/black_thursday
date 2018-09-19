@@ -25,7 +25,6 @@ class CustomerTest < Minitest::Test
     assert_equal "Ondricka", @customer1.last_name
     assert_equal @created_at_time, @customer1.created_at
     assert_equal @updated_at_time, @customer1.updated_at
-    assert_equal "Joey Ondricka", @customer1.whole_name
   end
 
 end

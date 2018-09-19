@@ -23,7 +23,7 @@ class InvoiceRepositoryTest < Minitest::Test
       :created_at  => Time.now,
       :updated_at  => Time.now
     })
-    invoice.add_individual_invoice(i)
+    invoice.add_individual_item(i)
 
     assert_equal [i], invoice.all
   end
@@ -46,8 +46,8 @@ class InvoiceRepositoryTest < Minitest::Test
       :created_at  => Time.now,
       :updated_at  => Time.now
     })
-    invoice.add_individual_invoice(i1)
-    invoice.add_individual_invoice(i2)
+    invoice.add_individual_item(i1)
+    invoice.add_individual_item(i2)
 
     assert_equal [i1, i2], invoice.all
   end
@@ -70,8 +70,8 @@ class InvoiceRepositoryTest < Minitest::Test
       :created_at  => Time.now,
       :updated_at  => Time.now
      })
-    invoice.add_individual_invoice(i1)
-    invoice.add_individual_invoice(i2)
+    invoice.add_individual_item(i1)
+    invoice.add_individual_item(i2)
 
     assert_equal i2, invoice.find_by_id(10)
     assert_equal i1, invoice.find_by_id(2)
@@ -104,12 +104,46 @@ class InvoiceRepositoryTest < Minitest::Test
       :created_at  => Time.now,
       :updated_at  => Time.now
     })
-    invoice.add_individual_invoice(i1)
+    invoice.add_individual_item(i1)
     assert_equal [i1], invoice.find_all_by_customer_id(1)
 
-    invoice.add_individual_invoice(i2)
-    invoice.add_individual_invoice(i3)
+    invoice.add_individual_item(i2)
+    invoice.add_individual_item(i3)
     assert_equal [i2, i3], invoice.find_all_by_customer_id(2)
+  end
+
+  def test_it_can_find_all_by_status
+    invoice = InvoiceRepository.new
+    i1 = Invoice.new({
+      :id          => 2,
+      :customer_id => 1,
+      :merchant_id => 12334753,
+      :status      => "shipped",
+      :created_at  => Time.now,
+      :updated_at  => Time.now
+    })
+    i2 = Invoice.new({
+      :id          => 10,
+      :customer_id => 2,
+      :merchant_id => 12334839,
+      :status      => "pending",
+      :created_at  => Time.now,
+      :updated_at  => Time.now
+     })
+
+    i3 = Invoice.new({
+      :id          => 13,
+      :customer_id => 2,
+      :merchant_id => 12334833,
+      :status      => "shipped",
+      :created_at  => Time.now,
+      :updated_at  => Time.now
+    })
+    invoice.add_individual_item(i1)
+    invoice.add_individual_item(i2)
+    invoice.add_individual_item(i3)
+    assert_equal [i1, i3], invoice.find_all_by_status("shipped")
+    assert_equal [i2], invoice.find_all_by_status("pending")
   end
 
   def test_it_can_find_by_merchant_id
@@ -138,16 +172,27 @@ class InvoiceRepositoryTest < Minitest::Test
       :created_at  => Time.now,
       :updated_at  => Time.now
     })
-    invoice.add_individual_invoice(i1)
+    invoice.add_individual_item(i1)
     assert_equal [i1], invoice.find_all_by_merchant_id(12334753)
 
-    invoice.add_individual_invoice(i2)
-    invoice.add_individual_invoice(i3)
+    invoice.add_individual_item(i2)
+    invoice.add_individual_item(i3)
     assert_equal [i2, i3], invoice.find_all_by_merchant_id(12334839)
   end
 
   def test_it_can_create_item
     invoice = InvoiceRepository.new
+    invoice.create({
+      :customer_id => 1,
+      :merchant_id => 12334753,
+      :status      => "shipped",
+      :created_at  => Time.now,
+      :updated_at  => Time.now
+    })
+
+    assert_equal 1, invoice.all.count
+    assert_equal 1, invoice.all.first.id
+
     invoice.create({
       :id          => 2,
       :customer_id => 1,
@@ -157,7 +202,21 @@ class InvoiceRepositoryTest < Minitest::Test
       :updated_at  => Time.now
     })
 
-    assert_equal 1, invoice.all.count
+    assert_equal 2, invoice.all.count
+    assert_equal 2, invoice.all.last.id
+
+    invoice.create({
+      :id          => 2,
+      :customer_id => 1,
+      :merchant_id => 12334753,
+      :status      => "shipped",
+      :created_at  => Time.now,
+      :updated_at  => Time.now
+    })
+
+    assert_equal 3, invoice.all.count
+    assert_equal 3, invoice.all.last.id
+
   end
 
   def test_it_can_update_attributes
@@ -178,8 +237,8 @@ class InvoiceRepositoryTest < Minitest::Test
       :created_at  => Time.now,
       :updated_at  => Time.now
      })
-    invoice.add_individual_invoice(i1)
-    invoice.add_individual_invoice(i2)
+    invoice.add_individual_item(i1)
+    invoice.add_individual_item(i2)
     hash_1 = {
       :id          => 10,
       :customer_id => 1,
@@ -212,8 +271,8 @@ class InvoiceRepositoryTest < Minitest::Test
       :created_at  => Time.now,
       :updated_at  => Time.now
     })
-    invoice.add_individual_invoice(i1)
-    invoice.add_individual_invoice(i2)
+    invoice.add_individual_item(i1)
+    invoice.add_individual_item(i2)
     invoice.delete(2)
 
     assert_nil invoice.find_by_id(2)

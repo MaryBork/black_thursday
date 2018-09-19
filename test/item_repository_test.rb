@@ -242,8 +242,37 @@ class ItemRepositoryTest < Minitest::Test
       :merchant_id => 6
       })
 
-    expected = ir.find_by_id(1)
+    expected = ir.all.first
     assert_equal expected, ir.find_by_name("Marker")
+    assert_equal 1, expected.id
+
+    ir.create({
+      :id => 2,
+      :name        => "Book",
+      :description => "You can use it to write things in color!",
+      :unit_price  => BigDecimal.new(4.99,4),
+      :created_at  => Time.now,
+      :updated_at  => Time.now,
+      :merchant_id => 6
+      })
+
+    expected = ir.all.last
+    assert_equal expected, ir.find_by_name("Book")
+    assert_equal 2, expected.id
+
+    ir.create({
+      :id => 2,
+      :name        => "Ruler",
+      :description => "You can use it to write things in color!",
+      :unit_price  => BigDecimal.new(4.99,4),
+      :created_at  => Time.now,
+      :updated_at  => Time.now,
+      :merchant_id => 6
+      })
+
+    expected = ir.all.last
+    assert_equal expected, ir.find_by_name("Ruler")
+    assert_equal 3, expected.id
   end
 
   def test_it_can_update_attributes

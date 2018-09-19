@@ -18,11 +18,6 @@ class Customer
     @last_name    = data[:last_name]
     @created_at   = data[:created_at]
     @updated_at   = data[:updated_at]
-    @whole_name   = whole_name
   end
 
-  def whole_name
-    @first_name + " " + @last_name
-  end
-  
 end
