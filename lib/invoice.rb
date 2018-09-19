@@ -14,7 +14,6 @@ class Invoice
 
 
   def initialize(sale_stats)
-    @sale_stats = {}
     @id = sale_stats[:id]
     @customer_id = sale_stats[:customer_id]
     @merchant_id = sale_stats[:merchant_id]

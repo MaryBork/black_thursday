@@ -12,6 +12,24 @@ class TransactionRepository
     split(filepath) if filepath != nil
   end
 
+  def find_all_by_invoice_id(invoice_id)
+      @all.find_all do |object|
+        object.invoice_id == invoice_id
+      end
+  end
+
+  def find_all_by_credit_card_number(credit_card_number)
+    @all.find_all do |object|
+      object.credit_card_number == credit_card_number
+    end
+  end
+
+  def find_all_by_result(result)
+    @all.find_all do |object|
+      object.result == result
+    end
+  end
+
   def split(filepath)
     objects = CSV.open(filepath, headers: true, header_converters: :symbol)
 
@@ -33,28 +51,6 @@ class TransactionRepository
 
     attributes_array.each do |hash|
       create(hash)
-    end
-  end
-
-  def all
-    @all
-  end
-
-  def find_all_by_invoice_id(invoice_id)
-      @all.find_all do |object|
-        object.invoice_id == invoice_id
-      end
-  end
-
-  def find_all_by_credit_card_number(credit_card_number)
-    @all.find_all do |object|
-      object.credit_card_number == credit_card_number
-    end
-  end
-
-  def find_all_by_result(result)
-    @all.find_all do |object|
-      object.result == result
     end
   end
 

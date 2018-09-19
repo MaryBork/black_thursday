@@ -13,25 +13,15 @@ class InvoiceItemRepository
     split(filepath) if filepath != nil
   end
 
-  def create(attributes)
-    is_included = @all.any? do |invoice_item|
-      attributes[:id] == invoice_item.id
+  def find_all_by_item_id(items_id)
+    @all.find_all do |invoice_item|
+      invoice_item.item_id == items_id
     end
-    is_included = false if @all == []
-    has_id = attributes[:id] != nil
-    if has_id && !is_included
-      @all << InvoiceItem.new(attributes)
-    elsif @all == []
-      new_id = 1
-      attributes[:id] = new_id
-      @all << InvoiceItem.new(attributes)
-    else
-      highest_id = @all.max_by do |invoice_item|
-        invoice_item.id
-      end.id
-      new_id = highest_id + 1
-      attributes[:id] = new_id
-      @all << InvoiceItem.new(attributes)
+  end
+
+  def find_all_by_invoice_id(invoices_id)
+    @all.find_all do |invoice_item|
+      invoice_item.invoice_id == invoices_id
     end
   end
 
@@ -60,20 +50,30 @@ class InvoiceItemRepository
     end
   end
 
-  def find_all_by_item_id(items_id)
-    @all.find_all do |invoice_item|
-      invoice_item.item_id == items_id
+  def create(attributes)
+    is_included = @all.any? do |invoice_item|
+      attributes[:id] == invoice_item.id
     end
-  end
-
-  def find_all_by_invoice_id(invoices_id)
-    @all.find_all do |invoice_item|
-      invoice_item.invoice_id == invoices_id
+    is_included = false if @all == []
+    has_id = attributes[:id] != nil
+    if has_id && !is_included
+      @all << InvoiceItem.new(attributes)
+    elsif @all == []
+      new_id = 1
+      attributes[:id] = new_id
+      @all << InvoiceItem.new(attributes)
+    else
+      highest_id = @all.max_by do |invoice_item|
+        invoice_item.id
+      end.id
+      new_id = highest_id + 1
+      attributes[:id] = new_id
+      @all << InvoiceItem.new(attributes)
     end
   end
 
   def inspect
-    "#<#{self.class} #{@merchants.size} rows>"
+    "#<#{self.class} #{@invoice_items.size} rows>"
   end
 
 end

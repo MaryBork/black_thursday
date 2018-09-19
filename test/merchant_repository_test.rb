@@ -62,8 +62,8 @@ class MerchantRepositoryTest < Minitest::Test
   def test_it_can_create_merchant_with_empty_array
     mr = MerchantRepository.new
 
-    mr.create({:id => 490, :name => "Jim Flooring"})
-    actual = mr.find_by_id(490).name
+    mr.create({:name => "Jim Flooring"})
+    actual = mr.find_by_id(1).name
     assert_equal "Jim Flooring", actual
   end
 

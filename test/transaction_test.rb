@@ -15,7 +15,7 @@ require_relative '../lib/transaction'
       :updated_at => Time.now
       })
     assert_instance_of Transaction, t
-    end
+  end
 
 
   def test_it_has_an_id

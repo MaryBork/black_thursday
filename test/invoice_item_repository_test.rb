@@ -48,7 +48,6 @@ class InvoiceItemRepositoryTest < Minitest::Test
   def test_it_can_create_item
     iir = InvoiceItemRepository.new
     iir.create({
-      :id          => 100,
       :item_id     => 263000844,
       :invoice_id  => 100,
       :quantity    => 3,
@@ -57,8 +56,22 @@ class InvoiceItemRepositoryTest < Minitest::Test
       :updated_at  => Time.parse("2010-03-27 14:54:09 UTC")
     })
 
+    expected = iir.find_by_id(1)
+    assert_equal expected, iir.all.last
+
+    iir.create({
+      :id          => 100,
+      :item_id     => 263555844,
+      :invoice_id  => 101,
+      :quantity    => 5,
+      :unit_price  => BigDecimal.new("14000") / 100,
+      :created_at  => Time.parse("2012-03-30 14:54:09 UTC"),
+      :updated_at  => Time.parse("2010-03-27 14:54:09 UTC")
+    })
+
     expected = iir.find_by_id(100)
     assert_equal expected, iir.all.last
+
     iir.create({
       :id          => 100,
       :item_id     => 263000844,

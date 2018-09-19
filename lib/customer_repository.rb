@@ -13,25 +13,17 @@ class CustomerRepository
     split(filepath) if filepath != nil
   end
 
-  def create(attributes)
-    is_included = @all.any? do |invoice_item|
-      attributes[:id] == invoice_item.id
+  def find_all_by_first_name(name)
+    @all.find_all do |customer|
+      customer_name = customer.first_name.downcase
+      customer_name.include?(name.downcase)
     end
-    is_included = false if @all == []
-    has_id = attributes[:id] != nil
-    if has_id && !is_included
-      @all << Customer.new(attributes)
-    elsif @all == []
-      new_id = 1
-      attributes[:id] = new_id
-      @all << Customer.new(attributes)
-    else
-      highest_id = @all.max_by do |invoice_item|
-        invoice_item.id
-      end.id
-      new_id = highest_id + 1
-      attributes[:id] = new_id
-      @all << Customer.new(attributes)
+  end
+
+  def find_all_by_last_name(name)
+    @all.find_all do |customer|
+      customer_name = customer.last_name.downcase
+      customer_name.include?(name.downcase)
     end
   end
 
@@ -56,22 +48,30 @@ class CustomerRepository
     end
   end
 
-  def find_all_by_first_name(name)
-    @all.find_all do |customer|
-      customer_name = customer.first_name.downcase
-      customer_name.include?(name.downcase)
+  def create(attributes)
+    is_included = @all.any? do |invoice_item|
+      attributes[:id] == invoice_item.id
     end
-  end
-
-  def find_all_by_last_name(name)
-    @all.find_all do |customer|
-      customer_name = customer.last_name.downcase
-      customer_name.include?(name.downcase)
+    is_included = false if @all == []
+    has_id = attributes[:id] != nil
+    if has_id && !is_included
+      @all << Customer.new(attributes)
+    elsif @all == []
+      new_id = 1
+      attributes[:id] = new_id
+      @all << Customer.new(attributes)
+    else
+      highest_id = @all.max_by do |invoice_item|
+        invoice_item.id
+      end.id
+      new_id = highest_id + 1
+      attributes[:id] = new_id
+      @all << Customer.new(attributes)
     end
   end
 
   def inspect
-    "#<#{self.class} #{@merchants.size} rows>"
+    "#<#{self.class} #{@customers.size} rows>"
   end
 
 end

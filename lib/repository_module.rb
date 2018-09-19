@@ -73,6 +73,11 @@ module RepoMethods
         object.result = attributes[:result]
       end
     end
+    if defined? object.status != nil
+      if attributes[:status] != nil
+        object.status = attributes[:status]
+      end
+    end
     if defined? object.updated_at != nil
       object.updated_at = Time.now
     end

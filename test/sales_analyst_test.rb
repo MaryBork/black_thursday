@@ -128,9 +128,43 @@ class SalesAnalystTest < Minitest::Test
     assert_equal 1, @sales_engine.invoices.find_all_by_customer_id(first_id).length
   end
 
-  def test_find_item
+  def test_find_one_time_buyer_top_item
     item = @sales_analyst.one_time_buyers_top_item
     assert_equal 263396463, item.id
+  end
+
+  def test_it_can_return_items_in_year
+    assert_equal 2, @sales_analyst.items_bought_in_year(400, 2002).length
+    assert_equal 263549742, @sales_analyst.items_bought_in_year(400, 2002).first.id
+    assert_equal "Necklace: V Tube", @sales_analyst.items_bought_in_year(400, 2002).first.name
+    assert_equal Item, @sales_analyst.items_bought_in_year(400, 2002).first.class
+  end
+
+  def test_can_return_list_of_high_volume_items
+    actual = @sales_analyst.highest_volume_items(200)
+
+    assert_equal 6, actual.length
+    assert_equal 263420195, actual.first.id
+    assert_equal 263448547, actual.last.id
+    assert_instance_of Item, actual.first
+  end
+
+  def test_can_return_customers_with_unpaid_invoices
+    actual = @sales_analyst.customers_with_unpaid_invoices
+    assert_equal 786, actual.length
+    assert_equal 1, actual.first.id
+    assert_equal 999, actual.last.id
+  end
+
+  def test_can_return_invoice_with_highest_revenue
+    actual = @sales_analyst.best_invoice_by_revenue
+    assert_equal 3394, actual.id
+    assert_equal Invoice, actual.class
+  end
+
+  def test_it_can_return_best_invoice_by_quantity
+    assert_equal 1281, @sales_analyst.best_invoice_by_quantity.id
+    assert_equal Invoice, @sales_analyst.best_invoice_by_quantity.class
   end
 
 end
