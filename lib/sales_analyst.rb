@@ -190,14 +190,16 @@ class SalesAnalyst
   # returns array of customer objects
   def one_time_buyers
     @customers.all.find_all do |customer|
-      invoices = @invoices.find_all_by_customer_id(customer.id)
+      invoices = customer_invoices(customer.id)
+      # invoices = @invoices.find_all_by_customer_id(customer.id)
       invoices.length == 1
     end
   end
 
   def one_time_buyer_items
     one_time_buyers.reduce([]) do |array, buyer|
-      invoice = (@invoices.find_all_by_customer_id(buyer.id))[0]
+      invoice = (customer_invoices(buyer.id))[0]
+      # invoice = (@invoices.find_all_by_customer_id(buyer.id))[0]
 
       if invoice_paid_in_full?(invoice.id) == true
         buyer_items = @invoice_items.find_all_by_invoice_id(invoice.id)
@@ -257,6 +259,33 @@ class SalesAnalyst
     standard_deviation(object_per_merchant).round(2)
   end
 
+  def customer_invoices(customer_id)
+    @invoices.find_all_by_customer_id(customer_id)
+  end
+
+  def invoice_list_to_invoice_item_list(invoices_array)
+    invoices_array.map do |invoice|
+      @invoice_items.find_all_by_invoice_id(invoice.id)
+    end.flatten
+  end
+
+  def item_id_by_quantity(invoice_item_array)
+    invoice_item_array.reduce(Hash.new(0)) do |hash, invoice_item|
+      if hash[invoice_item.item_id].nil? == false
+        hash[invoice_item.item_id] = invoice_item.quantity
+      else
+        hash[invoice_item.item_id] + invoice_item.quantity
+      end
+      hash
+    end
+  end
+
+  def max_by_quantity(invoice_item_hash)
+    invoice_item_hash.max_by do |item_id, item_quantity|
+      item_quantity
+    end
+  end
+
   # end helpers
 
   # calculation helper methods
@@ -282,63 +311,92 @@ class SalesAnalyst
     (sum_of_data / integer_array.count).round(2)
   end
 
+  def invoice_to_invoice_items_summed(invoice)
+    invoice_items = @invoice_items.find_all_by_invoice_id(invoice.id)
+
+    invoice_items.reduce(0) do |sum, invoice_item|
+      sum + invoice_item.quantity
+    end
+  end
+
   # end calc helpers
 
   def top_merchant_for_customer(customer_id)
-    customer_invoices = @invoices.find_all_by_customer_id(customer_id)
-    customer_invoice_ids = customer_invoices.group_by do |invoice|
-      invoice.id
+    customer_invoices = customer_invoices(customer_id)
+    merchant_quantities = customer_invoices.reduce({}) do |hash, invoice|
+      hash[invoice.merchant_id] = invoice_to_invoice_items_summed(invoice)
+      hash
     end
-
-    cust_invoice_objects = customer_invoice_ids.values
-
-    invoice_ids = customer_invoice_ids.keys
-    quantities = []
-    in_item_one = @invoice_items.find_all_by_invoice_id(invoice_ids[0])
-    quantities << in_item_one
-
-    in_item_two = @invoice_items.find_all_by_invoice_id(invoice_ids[1])
-    quantities << in_item_two
-
-    in_item_three = @invoice_items.find_all_by_invoice_id(invoice_ids[2])
-    quantities << in_item_three
-
-    in_item_four = @invoice_items.find_all_by_invoice_id(invoice_ids[3])
-    quantities << in_item_four
-
-    in_item_five = @invoice_items.find_all_by_invoice_id(invoice_ids[4])
-    quantities << in_item_five
-
-    in_item_six = @invoice_items.find_all_by_invoice_id(invoice_ids[5])
-    quantities << in_item_six
-
-    in_item_seven= @invoice_items.find_all_by_invoice_id(invoice_ids[6])
-    quantities << in_item_seven
-
-    in_item_eight = @invoice_items.find_all_by_invoice_id(invoice_ids[7])
-    quantities << in_item_eight
-
-    greatest = quantities[1].max_by do |item|
-      item.quantity
+    greatest_merchant = merchant_quantities.max_by do |merchant_id, merchant_quantity|
+      merchant_quantity
     end
-    found_merch_id = @invoices.find_by_id(greatest.invoice_id).merchant_id
-
-    @merchants.find_by_id(found_merch_id)
-
+    @merchants.find_by_id(greatest_merchant[0])
   end
 
   def items_bought_in_year(customer_id, year)
-    customer_purchases = @invoices.find_all_by_customer_id(customer_id)
+    customer_purchases = customer_invoices(customer_id)
+    # customer_purchases = @invoices.find_all_by_customer_id(customer_id)
+
     purchases_by_year = customer_purchases.find_all do |purchase|
       purchase.created_at.strftime("%Y").to_i == year
     end
-    invoice_items_by_year = purchases_by_year.map do |purchase|
-      @invoice_items.find_all_by_invoice_id(purchase.id)
-    end.flatten
+
+    # invoice_items_by_year = purchases_by_year.map do |purchase|
+    #   @invoice_items.find_all_by_invoice_id(purchase.id)
+    # end.flatten
+    invoice_items_by_year = invoice_list_to_invoice_item_list(purchases_by_year)
 
     invoice_items_by_year.map do |invoice_item|
       @items.find_by_id(invoice_item.item_id)
     end
+  end
+
+  def customers_with_unpaid_invoices
+    @customers.all.find_all do |customer|
+      customer_invoices = customer_invoices(customer.id)
+      # customer_invoices = @invoices.find_all_by_customer_id(customer.id)
+      customer_invoices.any? do |invoice|
+        invoice_paid_in_full?(invoice.id) == false
+      end
+    end
+  end
+
+  def highest_volume_items(customer_id)
+    customer_invoices = customer_invoices(customer_id)
+    # customer_invoices = @invoices.find_all_by_customer_id(customer_id)
+
+    # customer_invoice_items = customer_invoices.map do |invoice|
+    #   @invoice_items.find_all_by_invoice_id(invoice.id)
+    # end.flatten
+    customer_invoice_items = invoice_list_to_invoice_item_list(customer_invoices)
+
+    cust_item_quantities = item_id_by_quantity(customer_invoice_items)
+    # customer_invoice_items.reduce(Hash.new(0)) do |hash, invoice_item|
+    #   if hash[invoice_item.item_id].nil? == false
+    #     hash[invoice_item.item_id] = invoice_item.quantity
+    #   else
+    #     hash[invoice_item.item_id] + invoice_item.quantity
+    #   end
+    #   hash
+    # end
+
+    highest_quantity = max_by_quantity(cust_item_quantities)[-1]
+    # cust_item_quantities.max_by do |item_id, item_quantity|
+    #   item_quantity
+    # end[-1]
+
+    high_item_quantities = cust_item_quantities.find_all do |item_id, item_quantity|
+      item_quantity == highest_quantity
+    end
+
+    high_quant_item_ids = high_item_quantities.map do |item_quantity|
+      item_quantity[0]
+    end
+
+    high_quant_item_ids.map do |item_id|
+      @items.find_by_id(item_id)
+    end
+
   end
 
 end
